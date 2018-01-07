@@ -1,0 +1,104 @@
+#!/bin/bash
+
+instuser=`whoami`
+
+dirs=(
+  "/opt"
+  "/opt/arpnamer"
+  "/etc/arpnamer"
+  "/opt/arpnamer/tmp"
+  "/opt/arpnamer/output"
+  "/opt/arpnamer/bin"
+  "/var/log/arpnamer"
+)
+
+makedirs () {
+  for d in "${dirs[@]}"; do
+    if [ ! -d "$d" ]; then
+      echo "Making directory $d";
+      mkdir $d
+    fi
+  done
+}
+
+if [ "$instuser" == 'root' ];then
+  clear
+  echo "Arpnamer install process"
+  echo "------------------------"
+  makedirs
+  # arpnamer exec
+  if [ -f /opt/arpnamer/bin/arpnamer ]; then 
+    checkarpnamerbin=`diff arpnamer /opt/arpnamer/bin/arpnamer | wc -l`
+  else
+    checkarpnamerbin=1
+  fi
+  if [ "$checkarpnamerbin" != 0 ]; then
+    echo "Installing arpnamer exec"
+    cp arpnamer /opt/arpnamer/bin
+    chmod 755 /opt/arpnamer/bin/arpnamer
+  else
+    echo "Not installing - arpnamer exec has not changed"
+  fi
+  if [ ! -L /usr/bin/arpnamer ]; then
+    ln -s /opt/arpnamer/bin/arpnamer /usr/bin/arpnamer
+  fi
+
+  # version
+  if [ -f /etc/arpnamer/version ]; then
+    checkversion=`diff arpnamer-version /etc/arpnamer/version | wc -l`
+  else
+    checkversion=1
+  fi
+  if [ "$checkversion" != 0 ]; then
+    cp arpnamer-version /etc/arpnamer/version
+    chmod 644 /etc/arpnamer/version
+  fi
+  
+  # arpnamer rsyslog
+  if [ -f /etc/rsyslog.d/arpnamer.conf ]; then
+    checkarpnamersyslog=`diff arpnamer-rsyslog.conf /etc/rsyslog.d/arpnamer.conf | wc -l`
+  else
+    checkarpnamersyslog=1
+  fi
+  if [ "$checkarpnamersyslog" != 0 ]; then
+    echo "Installing arpnamer rsyslog config"
+    cp arpnamer-rsyslog.conf /etc/rsyslog.d/arpnamer.conf
+    chmod 644 /etc/rsyslog.d/arpnamer.conf
+    echo "Restarting Rsyslog"
+    systemctl restart rsyslog
+  else
+    echo "Not installing - arpnamer rsylog config has not changed"
+  fi
+  
+  # Arpnamer config
+  if [ -f /etc/arpnamer/arpnamer.conf ]; then
+    echo "Installing config /etc/arpnamer/arpnamer.conf.new"
+    echo "View changes of new config and import into current config"
+    cp arpnamer.conf /etc/arpnamer/arpnamer.conf.new
+    chmod 644 /etc/arpnamer/arpnamer.conf.new
+  else
+    echo "Installing config /etc/arpnamer/arpnamer.conf"
+    echo "Review/Edit config before use"
+    cp arpnamer.conf /etc/arpnamer/arpnamer.conf
+    chmod 644 /etc/arpnamer/arpnamer.conf
+  fi
+  
+  # Arpnamer Service
+  if [ -f /etc/systemd/system/arpnamer.service ]; then
+    checkarpnamerservice=`diff arpnamer.service /etc/systemd/system/arpnamer.service | wc -l`
+  else
+    checkarpnamerservice=1
+  fi
+  if [ "$checkarpnamerservice" != 0 ]; then
+    echo "Installing arpnamer.service"
+    echo "To enable service run - 'systemctl enable arpnamer'"
+    echo "To start service run - 'systemctl start arpnamer'"
+    cp arpnamer.service /etc/systemd/system/arpnamer.service
+  else
+    echo "Not installing - arpnamer.service has not changed"
+  fi
+  echo "-------------------------"
+  echo "Arpnamer install complete"
+else
+  echo "installer must be ran as root user"
+fi

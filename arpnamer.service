@@ -1,0 +1,12 @@
+[Unit]
+Description=Arpnamer Service
+After=network.target
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/arpnamer
+TimeoutStartSec=0
+Restart=always
+
+[Install]
+WantedBy=default.target
