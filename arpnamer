@@ -112,8 +112,8 @@ outputter () {
 
 # Execute Scan
 executescan () {
+  cleantmp
   for int in $interface; do
-    cleantmp
     iaboui
     localarpscan
     arpdnsnames
