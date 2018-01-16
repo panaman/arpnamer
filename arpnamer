@@ -26,8 +26,6 @@ else
   interface=$interface
 fi
 
-datenow=$(date +"%FT%T")
-
 # CLEAN TEMP FILES
 cleantmp () {
   if [ -f "$arptmp" ]; then
@@ -112,6 +110,7 @@ outputter () {
 
 # Execute Scan
 executescan () {
+  datenow=$(date +"%FT%T")
   cleantmp
   for int in $interface; do
     iaboui
