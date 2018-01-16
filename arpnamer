@@ -29,12 +29,14 @@ fi
 datenow=$(date +"%FT%T")
 
 # CLEAN TEMP FILES
-if [ -f "$arptmp" ]; then
-  rm -f $arptmp
-fi
-if [ -f "$outfile" ]; then
-  rm -f $outfile
-fi
+cleantmp () {
+  if [ -f "$arptmp" ]; then
+    rm -f $arptmp
+  fi
+  if [ -f "$outfile" ]; then
+    rm -f $outfile
+  fi
+}
 
 # OUI & IAB FILE GENERATION AND UPDATE
 iaboui () {
@@ -111,6 +113,7 @@ outputter () {
 # Execute Scan
 executescan () {
   for int in $interface; do
+    cleantmp
     iaboui
     localarpscan
     arpdnsnames
